@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
-import { AccountRecord } from '../types';
-import { saveAccountDetails } from '../services/supabaseService';
+import React, { useState, useEffect } from 'react';
+import { AccountRecord, Bank } from '../types';
+import { saveAccountDetails, fetchBanks } from '../services/supabaseService';
 import { LucideSave, LucideCheckCircle, LucideAlertCircle, LucideLoader2, LucideDollarSign } from 'lucide-react';
 
 interface AccountFormProps {
@@ -18,11 +18,28 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
     label: '',
   });
 
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [loadingBanks, setLoadingBanks] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Fetch banks on component mount
+  useEffect(() => {
+    const loadBanks = async () => {
+      setLoadingBanks(true);
+      const response = await fetchBanks();
+      if (response.data) {
+        setBanks(response.data);
+      } else {
+        console.error('Failed to load banks:', response.error);
+      }
+      setLoadingBanks(false);
+    };
+    loadBanks();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
 
     // Auto-format BSB and Account Number: remove spaces
@@ -67,6 +84,14 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
        }
     }
 
+    // Ensure label is selected if we have banks loaded
+    if (banks.length > 0 && !formData.label) {
+        setStatus('error');
+        setErrorMessage('Please select a Bank Label.');
+        setLoading(false);
+        return;
+    }
+
     const response = await saveAccountDetails(formData);
 
     setLoading(false);
@@ -91,17 +116,35 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="md:col-span-2">
             <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-1">
-              Label <span className="text-gray-400 font-normal">(Optional)</span>
+              Bank Label
             </label>
-            <input
-              type="text"
-              id="label"
-              name="label"
-              placeholder="e.g. Invoice #123"
-              value={formData.label}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none text-gray-900 placeholder-gray-400"
-            />
+            <div className="relative">
+              <select
+                id="label"
+                name="label"
+                value={formData.label}
+                onChange={handleChange}
+                disabled={loadingBanks}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none text-gray-900 bg-white appearance-none"
+              >
+                <option value="">
+                  {loadingBanks ? 'Loading banks...' : 'Select a Bank'}
+                </option>
+                {banks.map((bank) => (
+                  <option key={bank.bankid} value={bank.bankname}>
+                    {bank.bankname}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+              </div>
+            </div>
+            {banks.length === 0 && !loadingBanks && (
+               <p className="text-xs text-orange-500 mt-1">No banks found. Please populate the 'banks' table.</p>
+            )}
           </div>
 
           <div className="md:col-span-2">

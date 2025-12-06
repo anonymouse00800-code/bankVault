@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { AccountRecord, SupabaseResponse } from '../types';
+import { AccountRecord, Bank, SupabaseResponse } from '../types';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, TABLE_NAME } from '../constants';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -34,6 +34,22 @@ export const saveAccountDetails = async (
     return { data: null, error: new Error(err.message || 'An unexpected error occurred') };
   }
 };
+
+export const fetchBanks = async (): Promise<SupabaseResponse<Bank[]>> => {
+  try {
+    const { data, error } = await supabase
+      .from('banks')
+      .select('*')
+      .order('bankname', { ascending: true });
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+    return { data: data as Bank[], error: null };
+  } catch (err: any) {
+    return { data: null, error: new Error(err.message) };
+  }
+}
 
 export const fetchRecentAccounts = async (): Promise<SupabaseResponse<AccountRecord[]>> => {
   try {
