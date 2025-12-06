@@ -1,3 +1,4 @@
+
 export interface AccountRecord {
   id?: number;
   created_at?: string;
@@ -6,6 +7,7 @@ export interface AccountRecord {
   bsb: string;
   payid: string;
   amount: string;
+  label: string;
 }
 
 export interface SupabaseResponse<T> {

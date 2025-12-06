@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { AccountRecord, SupabaseResponse } from '../types';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, TABLE_NAME } from '../constants';
@@ -17,6 +18,7 @@ export const saveAccountDetails = async (
           bsb: account.bsb,
           payid: account.payid,
           amount: account.amount,
+          label: account.label,
         },
       ])
       .select();

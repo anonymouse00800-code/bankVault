@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AccountRecord } from '../types';
 import { saveAccountDetails } from '../services/supabaseService';
@@ -14,13 +15,14 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
     acc_num: '',
     bsb: '',
     payid: '',
+    label: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
 
     // Auto-format BSB and Account Number: remove spaces
@@ -74,7 +76,7 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
       setErrorMessage(response.error.message);
     } else {
       setStatus('success');
-      setFormData({ acc_name: '', amount: '', acc_num: '', bsb: '', payid: '' });
+      setFormData({ acc_name: '', amount: '', acc_num: '', bsb: '', payid: '', label: '' });
       onSuccess();
       // Reset success status after a delay
       setTimeout(() => setStatus('idle'), 3000);
@@ -87,6 +89,21 @@ export const AccountForm: React.FC<AccountFormProps> = ({ onSuccess }) => {
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2">
+            <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-1">
+              Label <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="label"
+              name="label"
+              placeholder="e.g. Invoice #123"
+              value={formData.label}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors outline-none text-gray-900 placeholder-gray-400"
+            />
+          </div>
+
           <div className="md:col-span-2">
             <label htmlFor="acc_name" className="block text-sm font-medium text-gray-700 mb-1">
               Account Name

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { TABLE_NAME } from '../constants';
 
@@ -11,7 +12,8 @@ export const SqlHelper: React.FC = () => {
   amount numeric,
   acc_num text,
   bsb text,
-  payid text
+  payid text,
+  label text
 );`;
 
   const handleCopy = () => {
