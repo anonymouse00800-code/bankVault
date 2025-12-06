@@ -1,0 +1,5 @@
+{
+  "name": "Supabase Bank Vault",
+  "description": "A secure form application to save account details (Account Name, Number, and BSB) directly to a Supabase database.",
+  "requestFramePermissions": []
+}
